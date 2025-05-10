@@ -29,7 +29,7 @@ Create a .`gsrc` file in your home directory (`~/.gsrc`) with the following form
 }
 ```
 
-> **Note**
+> [!NOTE]
 > Only `.gitignore` from the working directory is considered; nested and global `.gitignore` files are not supported.
 
 ## Usage
