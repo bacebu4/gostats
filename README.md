@@ -12,10 +12,18 @@ Line counting with newline edge case handling
 
 ## Installation
 
-Download for Mac:
+Download the latest release from the [Releases](https://github.com/bacebu4/gostats/releases) page.
+
+### macOS (ARM64)
 
 ```sh
 curl -L -o gostats.tar.gz https://github.com/bacebu4/gostats/releases/download/v0.0.1/gostats-v0.0.1-darwin-arm64.tar.gz && tar -xzf gostats.tar.gz && mv gostats /usr/local/bin/
+```
+
+### Linux (x86_64)
+
+```sh
+curl -L -o gostats.tar.gz https://github.com/bacebu4/gostats/releases/download/v0.0.1/gostats-v0.0.1-linux-amd64.tar.gz && tar -xzf gostats.tar.gz && mv gostats /usr/local/bin/
 ```
 
 ## Configuration
