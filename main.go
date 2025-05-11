@@ -10,7 +10,7 @@ import (
 	"runtime"
 	"sync"
 
-	"github.com/gobwas/glob"
+	glob "github.com/bmatcuk/doublestar/v4"
 	gitignore "github.com/sabhiram/go-gitignore"
 )
 
@@ -35,8 +35,8 @@ const (
 )
 
 type pattern struct {
-	kind fileKind
-	glob glob.Glob
+	kind  fileKind
+	value string
 }
 
 const CONFIG_NAME = ".gostats.json"
@@ -66,11 +66,11 @@ func readConfigPatterns(homeDir string, workingDir string) ([]pattern, error) {
 	var result []pattern
 
 	for _, patternValue := range config.TargetPatterns {
-		result = append(result, pattern{kind: targetFile, glob: glob.MustCompile(patternValue)})
+		result = append(result, pattern{kind: targetFile, value: patternValue})
 	}
 
 	for _, patternValue := range config.TotalPatterns {
-		result = append(result, pattern{kind: totalFile, glob: glob.MustCompile(patternValue)})
+		result = append(result, pattern{kind: totalFile, value: patternValue})
 	}
 
 	return result, nil
@@ -120,7 +120,13 @@ func findPathsByPatterns(patterns []pattern, gitIgnorePattern *gitignore.GitIgno
 		}
 
 		for _, pattern := range patterns {
-			if pattern.glob.Match(pathValue) {
+			matched, err := glob.Match(pattern.value, pathValue)
+
+			if err != nil {
+				return fmt.Errorf("error on matching: %w", err)
+			}
+
+			if matched {
 				pathJobs <- path{value: pathValue, kind: pattern.kind}
 			}
 		}
@@ -129,7 +135,7 @@ func findPathsByPatterns(patterns []pattern, gitIgnorePattern *gitignore.GitIgno
 	})
 
 	if err != nil {
-		fmt.Printf("cannot walk working directory: %v", err)
+		fmt.Printf("cannot walk working directory: %v\n", err)
 	}
 }
 
@@ -230,7 +236,7 @@ func main() {
 	sumByKind, err := countLinesByPatterns(patterns, gitIgnorePattern, lineCounter, workingDir)
 
 	if err != nil {
-		fmt.Printf("Error counting: %v", err)
+		fmt.Printf("Error counting: %v\n", err)
 		return
 	}
 

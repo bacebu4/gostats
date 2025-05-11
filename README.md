@@ -28,17 +28,16 @@ curl -L -o gostats.tar.gz https://github.com/bacebu4/gostats/releases/download/v
 
 ## Configuration
 
-Create a .`gsrc` file in your home directory (`~/.gostats.json`) with the following format:
+Create a `.gostats.json` file in your home directory (`~/.gostats.json`) with the following format:
 
 ```json
 {
-  "targetPatterns": ["*test*.ts", "*Test*.ts", "*e2e*.ts"],
-  "totalPatterns": ["*.ts"]
+  "targetPatterns": ["src/**/*test*.ts", "src/**/*test*.ts", "src/**/*Test*.ts", "src/**/*e2e*.ts", "src/**/*generate*.ts"],
+  "totalPatterns": ["src/**/*.ts"]
 }
 ```
 
-- Both targetPatterns and totalPatterns are glob patterns using the syntax from [github.com/gobwas/glob](https://github.com/gobwas/glob).
-- Patterns support wildcards (`*`, `**`, `?`), character classes (`[a-z]`, `[!abc]`), and alternations (`{foo,bar}`).
+Both targetPatterns and totalPatterns are glob patterns using the syntax from [bmatcuk/doublestar](https://github.com/bmatcuk/doublestar).
 
 > [!NOTE]
 > Only `.gitignore` from the working directory is considered; nested and global `.gitignore` files are not supported.
