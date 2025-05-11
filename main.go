@@ -7,7 +7,6 @@ import (
 	"io/fs"
 	"math"
 	"os"
-	"path/filepath"
 	"runtime"
 	"sync"
 
@@ -101,21 +100,36 @@ type path struct {
 }
 
 func findPathsByPatterns(patterns []pattern, gitIgnorePattern *gitignore.GitIgnore, pathJobs chan<- path) {
-	err := filepath.WalkDir(".", func(pathValue string, d fs.DirEntry, err error) error {
+	defer func() {
+		close(pathJobs)
+	}()
+	dir, err := os.Getwd()
+
+	if err != nil {
+		fmt.Printf("cannot get working directory: %v", err)
+		return
+	}
+
+	fileSystem := os.DirFS(dir)
+	// TODO search dir to config + what if test in additional directories?
+	err = fs.WalkDir(fileSystem, ".", func(pathValue string, d fs.DirEntry, err error) error {
 		if err != nil {
 			fmt.Printf("Error accessing path %q: %v\n", pathValue, err)
 			return nil
 		}
 
+		DPrintf("Checking path: %v\n", pathValue)
+
 		if d.IsDir() {
+			if gitIgnorePattern.MatchesPath(pathValue) {
+				return fs.SkipDir
+			}
 			return nil
 		}
 
 		if gitIgnorePattern.MatchesPath(pathValue) {
 			return nil
 		}
-
-		DPrintf("Checking path: %v\n", pathValue)
 
 		for _, pattern := range patterns {
 			if pattern.glob.Match(pathValue) {
@@ -129,8 +143,6 @@ func findPathsByPatterns(patterns []pattern, gitIgnorePattern *gitignore.GitIgno
 	if err != nil {
 		fmt.Printf("cannot walk working directory: %v", err)
 	}
-
-	close(pathJobs)
 }
 
 func worker(pathJobs <-chan path, results chan<- result, errors chan<- error, wg *sync.WaitGroup, lineCounter *lineCounter) {
