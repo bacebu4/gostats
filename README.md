@@ -49,6 +49,9 @@ Both `targetPatterns` and `totalPatterns` are glob patterns using the syntax fro
 
 ## Usage
 
+> [!IMPORTANT]
+> Configuration file (`.gostats.json`) must be present, otherwise the process wil fail.
+
 From your project root:
 
 ```bash
