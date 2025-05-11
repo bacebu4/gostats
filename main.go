@@ -14,8 +14,6 @@ import (
 	gitignore "github.com/sabhiram/go-gitignore"
 )
 
-// TODO try https://github.com/bmatcuk/doublestar
-
 const Debug = false
 
 func DPrintf(format string, a ...any) {
@@ -43,26 +41,23 @@ type pattern struct {
 
 const CONFIG_NAME = ".gostats.json"
 
-func readConfigPatterns() ([]pattern, error) {
-	// TODO use as fallback, check working directory first
-	userHomeDir, err := os.UserHomeDir()
-
-	if err != nil {
-		return nil, fmt.Errorf("cannon get user home dir: %w", err)
-	}
-
-	marshaledConfig, err := os.ReadFile(fmt.Sprintf("%s/%s", userHomeDir, CONFIG_NAME))
+func readConfigPatterns(homeDir string, workingDir string) ([]pattern, error) {
+	marshaledConfig, err := os.ReadFile(fmt.Sprintf("%s/%s", workingDir, CONFIG_NAME))
 
 	if errors.Is(err, os.ErrNotExist) {
-		return []pattern{}, nil
-	} else if err != nil {
-		return nil, fmt.Errorf("unexpected error on reading .gsrc config: %w", err)
+		marshaledConfig, err = os.ReadFile(fmt.Sprintf("%s/%s", homeDir, CONFIG_NAME))
+
+		if errors.Is(err, os.ErrNotExist) {
+			return nil, errors.New(".gostats.json was not found")
+		} else if err != nil {
+			return nil, fmt.Errorf("unexpected error on reading .gostats.json config: %w", err)
+		}
 	}
 
 	var config Config
 
 	if err = json.Unmarshal(marshaledConfig, &config); err != nil {
-		return nil, fmt.Errorf("cannot unmarshal .gsrc config: %w", err)
+		return nil, fmt.Errorf("cannot unmarshal .gostats.json config: %w", err)
 	}
 
 	DPrintf("Target patterns: %v\n", config.TargetPatterns)
@@ -99,20 +94,13 @@ type path struct {
 	kind  fileKind
 }
 
-func findPathsByPatterns(patterns []pattern, gitIgnorePattern *gitignore.GitIgnore, pathJobs chan<- path) {
+func findPathsByPatterns(patterns []pattern, gitIgnorePattern *gitignore.GitIgnore, pathJobs chan<- path, workingDir string) {
 	defer func() {
 		close(pathJobs)
 	}()
-	dir, err := os.Getwd()
 
-	if err != nil {
-		fmt.Printf("cannot get working directory: %v", err)
-		return
-	}
-
-	fileSystem := os.DirFS(dir)
-	// TODO search dir to config + what if test in additional directories?
-	err = fs.WalkDir(fileSystem, ".", func(pathValue string, d fs.DirEntry, err error) error {
+	fileSystem := os.DirFS(workingDir)
+	err := fs.WalkDir(fileSystem, ".", func(pathValue string, d fs.DirEntry, err error) error {
 		if err != nil {
 			fmt.Printf("Error accessing path %q: %v\n", pathValue, err)
 			return nil
@@ -166,10 +154,10 @@ type result struct {
 	path  string
 }
 
-func countLinesByPatterns(patterns []pattern, gitIgnorePattern *gitignore.GitIgnore, lineCounter *lineCounter) (map[fileKind]int, error) {
+func countLinesByPatterns(patterns []pattern, gitIgnorePattern *gitignore.GitIgnore, lineCounter *lineCounter, workingDir string) (map[fileKind]int, error) {
 	pathJobs := make(chan path, 200)
 
-	go findPathsByPatterns(patterns, gitIgnorePattern, pathJobs)
+	go findPathsByPatterns(patterns, gitIgnorePattern, pathJobs, workingDir)
 
 	results := make(chan result, 200)
 	errors := make(chan error, 10)
@@ -210,9 +198,22 @@ func countLinesByPatterns(patterns []pattern, gitIgnorePattern *gitignore.GitIgn
 	return sumByKind, nil
 }
 
-// TODO timeouts?
 func main() {
-	patterns, err := readConfigPatterns()
+	homeDir, err := os.UserHomeDir()
+
+	if err != nil {
+		fmt.Printf("Cannon get user home dir: %v\n", err)
+		return
+	}
+
+	workingDir, err := os.Getwd()
+
+	if err != nil {
+		fmt.Printf("Cannon get working dir: %v\n", err)
+		return
+	}
+
+	patterns, err := readConfigPatterns(homeDir, workingDir)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -226,7 +227,7 @@ func main() {
 		return
 	}
 
-	sumByKind, err := countLinesByPatterns(patterns, gitIgnorePattern, lineCounter)
+	sumByKind, err := countLinesByPatterns(patterns, gitIgnorePattern, lineCounter, workingDir)
 
 	if err != nil {
 		fmt.Printf("Error counting: %v", err)

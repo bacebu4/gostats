@@ -6,7 +6,7 @@
 
 Line counting with newline edge case handling
 
-- Configurable file pattern matching via `.gsrc` file
+- Configurable file pattern matching via `.gostats.json` file
 - Honors `.gitignore` and skips ignored files
 - Minimal output format (suitable for CI)
 
@@ -28,7 +28,7 @@ curl -L -o gostats.tar.gz https://github.com/bacebu4/gostats/releases/download/v
 
 ## Configuration
 
-Create a .`gsrc` file in your home directory (`~/.gsrc`) with the following format:
+Create a .`gsrc` file in your home directory (`~/.gostats.json`) with the following format:
 
 ```json
 {
@@ -61,8 +61,4 @@ Percentage: 84.63%
 
 ## Roadmap
 
-- Add support for `.gsrc` in working directory
-- Add timeout handling for large projects
-- Faster directory scanning
-- Ability to pass config via CLI flags (override `.gsrc`)
-- Support for target/search directories
+- Ability to pass config via CLI flags (override `.gostats.json`)
