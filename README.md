@@ -28,7 +28,12 @@ curl -L -o gostats.tar.gz https://github.com/bacebu4/gostats/releases/download/v
 
 ## Configuration
 
-Create a `.gostats.json` file in your home directory (`~/.gostats.json`) with the following format:
+`gostats` looks for configuration in the following locations:
+
+- `$HOME/.gostats.json`
+- `./.gostats.json`
+
+### Configuration File Structure
 
 ```json
 {
@@ -37,7 +42,7 @@ Create a `.gostats.json` file in your home directory (`~/.gostats.json`) with th
 }
 ```
 
-Both targetPatterns and totalPatterns are glob patterns using the syntax from [bmatcuk/doublestar](https://github.com/bmatcuk/doublestar).
+Both `targetPatterns` and `totalPatterns` are glob patterns using the syntax from [bmatcuk/doublestar](https://github.com/bmatcuk/doublestar).
 
 > [!NOTE]
 > Only `.gitignore` from the working directory is considered; nested and global `.gitignore` files are not supported.
