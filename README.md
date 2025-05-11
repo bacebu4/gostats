@@ -37,6 +37,9 @@ Create a .`gsrc` file in your home directory (`~/.gsrc`) with the following form
 }
 ```
 
+- Both targetPatterns and totalPatterns are glob patterns using the syntax from [github.com/gobwas/glob](https://github.com/gobwas/glob).
+- Patterns support wildcards (`*`, `**`, `?`), character classes (`[a-z]`, `[!abc]`), and alternations (`{foo,bar}`).
+
 > [!NOTE]
 > Only `.gitignore` from the working directory is considered; nested and global `.gitignore` files are not supported.
 
@@ -61,3 +64,5 @@ Percentage: 84.63%
 - Add support for `.gsrc` in working directory
 - Add timeout handling for large projects
 - Faster directory scanning
+- Ability to pass config via CLI flags (override `.gsrc`)
+- Support for target/search directories
