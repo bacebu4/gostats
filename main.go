@@ -41,7 +41,7 @@ type pattern struct {
 	glob glob.Glob
 }
 
-const CONFIG_NAME = ".gsrc"
+const CONFIG_NAME = ".gostats.json"
 
 func readConfigPatterns() ([]pattern, error) {
 	// TODO use as fallback, check working directory first
