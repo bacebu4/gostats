@@ -121,7 +121,6 @@ func findPathsByPatterns(patterns []pattern, gitIgnorePattern *gitignore.GitIgno
 
 		for _, pattern := range patterns {
 			matched, err := glob.Match(pattern.value, pathValue)
-
 			if err != nil {
 				return fmt.Errorf("error on matching: %w", err)
 			}
@@ -144,7 +143,6 @@ func worker(pathJobs <-chan path, results chan<- result, errors chan<- error, wg
 
 	for path := range pathJobs {
 		resultValue, err := lineCounter.count(path.value)
-
 		if err != nil {
 			errors <- fmt.Errorf("error counting lines in %s: %w", path, err)
 			continue
@@ -206,14 +204,12 @@ func countLinesByPatterns(patterns []pattern, gitIgnorePattern *gitignore.GitIgn
 
 func main() {
 	homeDir, err := os.UserHomeDir()
-
 	if err != nil {
 		fmt.Printf("Cannon get user home dir: %v\n", err)
 		return
 	}
 
 	workingDir, err := os.Getwd()
-
 	if err != nil {
 		fmt.Printf("Cannon get working dir: %v\n", err)
 		return
@@ -234,7 +230,6 @@ func main() {
 	}
 
 	sumByKind, err := countLinesByPatterns(patterns, gitIgnorePattern, lineCounter, workingDir)
-
 	if err != nil {
 		fmt.Printf("Error counting: %v\n", err)
 		return
